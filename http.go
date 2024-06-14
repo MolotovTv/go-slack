@@ -3,13 +3,13 @@ package slack
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"time"
 )
 
-// Send sends an http request with a timeout
+// Send sends a http request with a timeout
 var Send = func(req *http.Request, httpClient *http.Client) (*http.Response, error) {
 	return httpClient.Do(req)
 }
@@ -53,7 +53,7 @@ func (s *Slack) SendWithMaxRetries(hostname string, pattern string, method strin
 			// Get body
 			if resp != nil {
 				defer resp.Body.Close()
-				if _, err = ioutil.ReadAll(resp.Body); err != nil {
+				if _, err = io.ReadAll(resp.Body); err != nil {
 					return
 				}
 			}
@@ -70,14 +70,14 @@ func (s *Slack) SendWithMaxRetries(hostname string, pattern string, method strin
 	}
 
 	// Max retries limit reached
-	err = fmt.Errorf("Max retries %d reached for request to %s", s.RetryMax, req.URL)
+	err = fmt.Errorf("max retries %d reached for request to %s", s.RetryMax, req.URL)
 	return
 }
 
 // ProcessResponse processes an HTTP response
 var ProcessResponse = func(req *http.Request, resp *http.Response) error {
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return fmt.Errorf("Invalid status code %v on %v", resp.StatusCode, req.URL)
+		return fmt.Errorf("invalid status code %v on %v", resp.StatusCode, req.URL)
 	}
 	return nil
 }
